@@ -111,7 +111,37 @@ open index.html
 
 No build process. No dependencies. No npm install. **It's just one HTML file.**
 
-### Option 3: Analyze Local Files
+### Option 3: Run Fully Offline (No CDN)
+
+If you want to run CodeFlow without any internet connection or CDN dependencies, use the `localize.mjs` script to download everything locally. Requires **Node 18+**.
+
+```bash
+# Clone the repo
+git clone https://github.com/braedonsaunders/codeflow.git
+cd codeflow
+
+# Download all CDN assets (JS, WASM, fonts) into vendor/
+node localize.mjs
+```
+
+This produces:
+- `vendor/` — all JS, WASM, and font files
+- `index.local.html` — fully self-contained, no internet required
+- `index.html` — original file updated with SRI integrity hashes
+
+Because the app loads WASM files at runtime, `index.local.html` must be served over HTTP rather than opened as a `file://` URL. Start a local server from the repo root:
+
+```bash
+npx serve .          # serves on http://localhost:3000
+# or
+npx http-server .    # serves on http://localhost:8080
+```
+
+Then open `http://localhost:3000/index.local.html` (or the port your server reports) in your browser.
+
+> **Note:** If you skip the local server and open `index.local.html` directly as a `file://` URL, tree-sitter WASM parsing will fail silently and Python dependency analysis will not work. Everything else functions normally.
+
+### Option 4: Analyze Local Files
 You can now analyze code directly from your local machine without uploading to GitHub:
 
 1. Open CodeFlow in your browser
@@ -323,7 +353,7 @@ We love contributions! Here's how:
 > Yes. Your code is fetched directly from GitHub to your browser. Nothing is sent to any server we control. Check the source — it's one file!
 
 **Q: Can I use it offline?**
-> Yes! With the new Local Files feature, you can analyze code from your computer without any internet connection. Just click the "📁 Local Files" button and select your files. All processing happens entirely in your browser.
+> Yes, two ways: (1) The "📁 Local Files" button lets you analyze files from your computer without uploading them anywhere. (2) For a fully CDN-free build, run `node localize.mjs` to download all assets into `vendor/`, then serve the repo with `npx serve .` and open `index.local.html`. See **Option 3** in Quick Start for details.
 
 **Q: Why is analysis slow?**
 > We make individual API calls for each file to get content. With a token, you get higher rate limits and faster analysis.
